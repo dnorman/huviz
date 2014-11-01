@@ -1313,7 +1313,7 @@ class Huviz
   parseAndShowTTLStreamer: (data, textStatus) =>
     # modelled on parseAndShowNQStreamer
     parse_start_time = new Date()
-    context = "http://universal"
+    context = "http://universal" # should this be the file's url?
     if GreenerTurtle? and @turtle_parser is 'GreenerTurtle'
       @G = new GreenerTurtle().parse(data, "text/turtle")
       console.log "GreenTurtle"
@@ -1402,7 +1402,37 @@ class Huviz
     @tick()
 
   remove_framing_quotes: (s) -> s.replace(/^\"/,"").replace(/\"$/,"")
-  parseAndShowNQStreamer: (uri) ->
+
+  ###
+  #   linearize: (streamoid) ->
+#     if streamoid.idx is 0
+#       self.postMessage({event: 'start'})
+#     if streamoid.idx = streamoid.data.length -1
+#       self.postMessage({event: 'finish'})
+#     else
+#       i = streamoid.idx + 1
+#       l = 0
+#       while (streamoid.data[i] != '\n'
+#         l++
+#         i++
+#       line = streamoid.data.substr(streamoid.idx, l+1).trim()
+#       self.postMessage({event: 'line', line: line})
+#       streamoid.idx = i
+#       callback =>
+#         @linearize(streamoid)
+#       setTimeout(callback, 0)
+
+
+  # parseNQlines(uri, text, lines)
+  # parseTTL(uri)
+  ###
+  # parseURL(uri)
+  # parseFile(File)
+  #   getParser
+  #   getData
+  # parseSomeExt(data)
+  
+  parseNq_uri_data: (uri, data) ->
     # turning a blob (data) into a stream
     #   http://stackoverflow.com/questions/4288759/asynchronous-for-cycle-in-javascript
     #   http://www.dustindiaz.com/async-method-queues/
@@ -1417,6 +1447,7 @@ class Huviz
         quad_count++
         if quad_count % 100 is 0
           @show_state_msg("parsed quad " + quad_count)
+
         q = parseQuadLine(e.data.line)
         if q
           q.s = q.s.raw
@@ -1432,39 +1463,46 @@ class Huviz
         msg = "finished_splitting "+uri
         @show_state_msg("done loading")
         document.dispatchEvent(new CustomEvent("dataset-loaded", {detail: uri}))
-
         #@choose_everything()
         #@fire_nextsubject_event @last_quad,null
       else
         msg = "unrecognized NQ event:"+e.data.event
       if msg?
         console.log msg
-        #alert msg
-    worker.postMessage({uri:uri})
+    worker.postMessage({uri:uri, text:data})
 
   DUMPER: (data) =>
     console.log data
 
-  fetchAndShow: (url) ->
-    @show_state_msg("fetching " + url)
+  get_parser_for_url: (url) ->
     if url.match(/.ttl/)
       #the_parser = @parseAndShowTurtle
       the_parser = @parseAndShowTTLStreamer
     else if url.match(/.nq/)
+      the_parser = @parseAndShowNQStreamer
+    else if url.match(/.n3/)
       the_parser = @parseAndShowNQ
-      @parseAndShowNQStreamer(url)
-      return
     else if url.match(/.json/)
       the_parser = @parseAndShowJSON
+    return the_parser
 
-    $.ajax
-      url: url
-      success: (data, textStatus) =>
-        the_parser(data, textStatus)
-        @hide_state_msg()
-      error: (jqxhr, textStatus, errorThrown) ->
-        console.log url, errorThrown
-        $("#status").text errorThrown + " while fetching " + url
+  parse_any_file: (url_or_fname, contents) ->
+    @show_state_msg("fetching " + url_or_fname)
+    the_parser = @get_parser_for_url(url_or_fname)
+    if contents?
+      the_parser(fname, contents)
+    else
+      make_callback = (the_parser) => 
+        return (data, textStatus) =>
+          the_parser(data, textStatus)
+          @hide_state_msg()
+
+      $.ajax
+        url: url_or_fname
+        success: make_callback(the_parser)
+        error: (jqxhr, textStatus, errorThrown) ->
+          console.log url_or_fname, jqxhr, textStatus, errorThrown
+          $("#status").text errorThrown + " while fetching " + url_or_fname
 
   # Deal with buggy situations where flashing the links on and off
   # fixes data structures.  Not currently needed.
@@ -2337,17 +2375,41 @@ class Huviz
     for elem in elems # so we can modify them in a loop
       @update_graph_settings(elem, false)
 
-  load_file: ->
+  load_local_files: (files) ->
+    # https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications
+    # http://www.w3.org/TR/FileAPI/#dfn-filereader
+    if files.length
+      the_file = files[0] # TODO figure out how to deal with mulitple files
+      reader = new FileReader()
+      reader.onload = (evt) =>
+        the_uri = the_file.name
+        @show_state_msg("loading...")
+        @init_from_graph_controls()
+        @reset_graph()
+        @data_uri = @get_dataset_uri()
+
+        contents = event.target.result
+        @show_state_msg(contents)
+
+        @parse_any_file(the_uri, contents)
+        @init_webgl() if @use_webgl
+        @hide_state_msg()
+      reader.readAsText(the_file)
+    else
+      alert "no files selected"
+
+  load_remote_file: (evt) ->
     @show_state_msg("loading...")
     @init_from_graph_controls()
     @reset_graph()
     @data_uri = @get_dataset_uri()
     @show_state_msg @data_uri
-    @fetchAndShow @data_uri  unless @G.subjects
+    @parse_any_file @data_uri  unless @G.subjects
     @init_webgl()  if @use_webgl
 
   get_dataset_uri: () ->
     # FIXME goodbye jquery
+    # alert($("input.file_picker").val())
     return $("select.file_picker option:selected").val()
 
   get_script_from_hash: () ->

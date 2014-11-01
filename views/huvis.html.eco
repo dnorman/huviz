@@ -180,13 +180,23 @@
 
     <div id="huvis_controls">
       <div>
+        <label title="load a local file">
+           local file:
+           <input 
+             name="local_file" 
+             id="file_control" 
+             type="file" 
+             onchange="HVZ.load_local_files(this.files)"
+             title="pick a local file">
+        </label>
         <label title="which file to load">
           data set
           <select 
               name="data_set" class="file_picker"
-              onchange="HVZ.load_file(this)" 
+              onchange="HVZ.load_remote_file(this)" 
               title="data sets are in order of increasing complexity">
 	    <option value=""> -- pick -- </option>
+            <option title="BROKEN">/data/BROKEN.nq</option>
             <option title="R.M. Ballantyne -- all attributes -- 14 nodes; 60 edges; 17 predicates">/data/ballrm.nq</option>
             <option title="Maria Abdy -- all attributes -- 68 nodes; 308 edges; 37 predicates">/data/abdyma.nq</option>
             <option title="William Shakespeare -- basic relational predicates -- 41 nodes; 46 edges; 21 predicates ">/data/shakwi.nq</option>

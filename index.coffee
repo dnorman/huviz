@@ -45,8 +45,8 @@ fs = require('fs')
 
 # https://github.com/sstephenson/eco
 localOrCDN = (templatePath, isLocal) ->
-  template = fs.readFileSync __dirname + templatePath, "utf-8"
   respondDude = (req, res) =>
+    template = fs.readFileSync __dirname + templatePath, "utf-8"
     res.send(eco.render(template, {isLocal: isLocal}))
   return respondDude
 

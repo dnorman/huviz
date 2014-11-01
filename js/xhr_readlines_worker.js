@@ -63,9 +63,12 @@ function linearize(streamoid) {
 
 self.addEventListener('message',function(e){
    console.log("e.data.uri: "+e.data.uri);
-   load(e.data.uri, function(xhr) {
-	   //console.log("raw",xhr.responseText.length);
-	   linearize({data:xhr.responseText,idx:0});
-       });
-    },false);
-
+   if (e.data.text) {
+     linearize({data:e.data.text,idx:0});
+   } else {
+     load(e.data.uri, function(xhr) {
+	     //console.log("raw",xhr.responseText.length);
+	     linearize({data:xhr.responseText,idx:0});
+         });
+      },false);
+    }
