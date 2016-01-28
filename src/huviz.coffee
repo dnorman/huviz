@@ -264,7 +264,7 @@ class Huviz
   show_snippets_constantly: false
   charge: -193
   gravity: 0.025
-  truncate_labels_to: 40
+  truncate_labels_to: 10
   snippet_count_on_edge_labels: true
   label_show_range: null # @link_distance * 1.1
   discard_radius: 200
@@ -888,6 +888,7 @@ class Huviz
       if @focused_node
         d3.select(".focused_node").classed "focused_node", false  if @use_svg
         @focused_node.focused_node = false
+        @unscroll_label(@focused_node)
       if new_focused_node?
         new_focused_node.focused_node = true
         if @use_svg
@@ -1134,6 +1135,7 @@ class Huviz
         ctx = @ctx
         # perhaps scrolling should happen here
         if node.focused_node or node.focused_edge?
+          @scroll_label(node)
           ctx.fillStyle = node.color
           ctx.font = focused_font
         else
@@ -1399,18 +1401,48 @@ class Huviz
         @develop(obj_n)
     else
       if subj_n.embryo and is_one_of(pid,NAME_SYNS)
-        @set_node_name(subj_n, quad.o.value)
+        @set_node_label(subj_n, quad.o.value.replace(/^\s+|\s+$/g, ''))
         @develop(subj_n) # might be ready now
     @last_quad = quad
 
-  set_node_name: (node, name) ->
-    full_name = name.replace(/^\s+|\s+$/g, '')
+  set_node_label: (node, full_name) ->
     node.full_name = full_name
     len = @truncate_labels_to
     if len > 0
       node.name = full_name.substr(0, len)
     else
       node.name = full_name
+    if node.name isnt node.full_name
+      node.label_truncated_to = @truncate_labels_to
+    else
+      node.label_truncated_to = 0
+
+  scroll_label: (node) ->
+    if not @truncate_labels_to
+      return
+    #node.name = node.full_name.substr(0, node.full_name.length / 2)
+    #node.dorf = "fraf"
+    #node.scroll_offset = 99
+    #console.log node.label_truncated_to
+    #return
+    if node.label_truncated_to
+      if not node.scroll_offset
+        node.scroll_offset = 1
+      else
+        node.scroll_offset += 1
+        if node.scroll_offset > @truncate_labels_to # @node.full_name.length
+          node.scroll_offset = 0
+      wrapped = node.full_name + "   " + node.full_name + "   " + node.full_name
+      node.name = wrapped.substr(node.scroll_offset, @truncate_labels_to)
+    if node.name.length < @truncate_labels_to
+      console.log "'#{node.name}' is shorter than #{@truncate_labels_to}"
+    if node.name.length > @truncate_labels_to
+      console.debug "'#{node.name}' is longer than #{@truncate_labels_to}"
+    #node.name = node.full_name
+    return
+
+  unscroll_label: (node) ->
+    @set_node_label(node, node.full_name)
 
   infer_edge_end_types: (edge) ->
     edge.source.type = 'Thing' unless edge.source.type?
@@ -2744,6 +2776,17 @@ class Huviz
         input:
           checked: "checked"
           type: "checkbox"
+    ,
+      truncate_labels_to:
+        text: "truncate labels to"
+        label:
+          title: "truncate labels after this amount, then scroll them"
+        input:
+          value: 10
+          min: 0
+          max: 60
+          step: 1
+          type: "range"
     ,
       doit_asap:
         style: "display:none"
