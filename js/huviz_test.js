@@ -204,7 +204,7 @@ describe("HuViz Tests", function() {
     after(function(){
       // ensure VIEW mode is restored
       if ($(".edit-controls").attr('edit') == 'yes') {
-        $(".edit-controls .slider").trigger('click');
+        //$(".edit-controls .slider").trigger('click');
       }
       expect($(".edit-controls").attr('edit')).to.equal('no');
     });
@@ -264,13 +264,13 @@ describe("HuViz Tests", function() {
            even .simulate is not working.
          */
          $(".edit-controls input[name='object']").
-           simulate("key-sequence", {sequence: 'foaf:uncles'})
+           simulate("key-sequence", {sequence: 'foaf:uncle'})
          HVZ.editui.validate_edit_form(); // This should NOT need to be called directly
          console.warn("validate_edit_form() should be triggered by key-sequence")
          expect($(".edit-controls .saveForm").attr('disabled')).to.not.exist();
 
          HVZ.editui.latest_quad = {};
-         $(".edit-controls .saveForm").click();
+         //$(".edit-controls .saveForm").click();
          expect(HVZ.editui.latest_quad.s).to.equal('bob')
          HVZ.dbsstorage.count(function(val) {
            expect(val).to.equal(1);

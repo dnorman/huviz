@@ -296,6 +296,7 @@ class Huviz
   focus_threshold: 100
   discard_radius: 200
   fisheye_radius: 100 #null # label_show_range * 5
+  grid_size: 100
   focus_radius: null # label_show_range
   drag_dist_threshold: 5
   snippet_size: 300
@@ -969,31 +970,82 @@ class Huviz
     new_focused_node = undefined
     new_focused_edge = undefined
     new_focused_idx = undefined
-    #focus_threshold = 100 #@focus_radius * 3 FIXME Change to setting variable
+    loaded_nodes = []
     focus_threshold = @focus_threshold
     closest = @width
     closest_point = undefined
 
     #if @dragging and not @edit_mode
-    #if @dragging and @edit_mode
+    if @dragging and @edit_mode
       #Called if dragging edit mode - check over and over
-      #console.log("in edit mode")
+      console.log("in edit mode")
       # Nearest node (not dragged) is now selected as 'object node' for form
       # Call function to insert object node id into form field (like for subject)
       # Focus and curser should move to form field 'predicate'
 
-    # FIXME build a spatial index!!!! OMG
-    @nodes.forEach (d, i) =>
-      n_dist = distance(d.fisheye or d, @last_mouse_pos)
-      #console.log(d)
-      if n_dist < closest
-        closest = n_dist
-        closest_point = d.fisheye or d
-      if n_dist <= focus_threshold
-        new_focused_node = d
-        focus_threshold = n_dist
-        new_focused_idx = i
+    # Mouse is in what grid section?
+    mouse_grid_location =
+      col: Math.floor(@last_mouse_pos[0]/@grid_size) + 1
+      row: Math.floor(@last_mouse_pos[1]/@grid_size) + 1
+    if mouse_grid_location.col  #if mouse is not in window (i.e. 0,0), don't do anything, otherwise check...
+      #console.log("mouse in grid " + mouse_grid_location.col + ", " + mouse_grid_location.row)
+      #using current mouse grid get relevant nodes in grid locations (i.e. current grid and connected)
+      #collect node ids by looking in these sectors (x-1, x, x+1 and y-1, y, y+1)
+      m_c = mouse_grid_location.col
+      m_r = mouse_grid_location.row
+      check_hash_numbers = []
+      if m_c and m_r
+        #console.log ("col: " + (m_c-1) + ", " + m_c + ", " + (m_c+1))
+        #console.log ("row: " + (mouse_grid_location.row-1) + ", " + mouse_grid_location.row + ", " + (mouse_grid_location.row+1))
+        for i in [(m_c-1),m_c,(m_c+1)]
+          for j in [(m_r-1), m_r, (m_r + 1)]
+            #console.log("mouse in grid " + m_c + ", " + m_r)
+            if i > 0 and j > 0
+              add_sector = (j + (i-1) * Math.floor(@width/@grid_size)) - 1
+              check_hash_numbers.push(add_sector)
 
+    # Original working node check block
+    #@nodes.forEach (d, i) =>
+    #  return
+    #  n_dist = distance(d.fisheye or d, @last_mouse_pos)
+    #  console.log("orign n_dist: " + n_dist)
+    #  if n_dist < closest
+    #    closest = n_dist
+    #    closest_point = d.fisheye or d
+    #  if n_dist <= focus_threshold
+    #    new_focused_node = d
+    #    focus_threshold = n_dist
+    #    new_focused_idx = i
+
+    # FIXME build a spatial index!!!! OMG
+    # Currently this does not work in any way with the current order in "tick"
+    # by changing the order so that @find_focused_node_or_edge() comes after drawNodes()
+    for hash_num in check_hash_numbers #cycle through sections of interest around mouse pointer
+      console.log("checking hash_num..." + hash_num)
+      if @node_hash_table[hash_num] # for each section, if there are nodes inside go through that section
+        console.log(@node_hash_table[hash_num])
+        for i in @node_hash_table[hash_num] # look at each node (by index) to see which is the closest to pointer
+          console.log("index number..." + i)
+          #find closest node
+          n_dist = distance(@nodes[i].fisheye or @nodes[i], @last_mouse_pos) # find distance from pointer to node
+          console.log("n_dist: " + n_dist)
+          #console.log("focus_threshold: " + focus_threshold)
+          if n_dist < closest # if the distance to node is smaller than the current closest then reset the closest
+            closest = n_dist # reset the current closest distance
+            closest_point = @nodes[i].fisheye or @nodes[i] # set closest point to x and y of current closest node
+            #console.log(closest_point)
+            #if n_dist <= focus_threshold
+            new_focused_node = @nodes[i] # set the focused node to the current closest node
+            #focus_threshold = n_dist
+            new_focused_idx = 1
+
+            #console.log(focus_threshold)
+            console.log("focus should be on...." + new_focused_idx)
+        console.log("closest distance: " + closest)
+          #console.log("newfocused node..")
+        #console.log(closest_point)
+
+    #This checks the nodes that are on the table
     @links_set.forEach (e, i) =>
       if e.handle?
         e_dist = distance(e.handle, @last_mouse_pos)
@@ -1205,6 +1257,18 @@ class Huviz
       node.x = cx + Math.sin(rad) * radius
       node.y = cy + Math.cos(rad) * radius
       node.fisheye = @fisheye(node)
+
+      # Assign node to grid hash array - because this happens after @find_focused_node_or_edge() this does not work
+      #console.log("assign node to..." + Math.floor(node.x) + " and " + Math.floor(node.y))
+      col = Math.floor(node.x/@grid_size)
+      row = Math.floor(node.y/@grid_size)
+      m = (row + (col-1) * Math.floor(@width/@grid_size)) - 1
+      if m
+        if not @node_hash_table[m]
+          @node_hash_table[m]=[]
+        @node_hash_table[m].push(i)
+      #-------------------------------------------------------
+
       if @use_canvas
         @draw_circle(node.fisheye.x, node.fisheye.y,
                      @calc_node_radius(node),
@@ -1298,6 +1362,7 @@ class Huviz
     # return if @focused_node   # <== policy: freeze screen when selected
     @ctx.lineWidth = @edge_width # TODO(smurp) just edges should get this treatment
     @find_focused_node_or_edge()
+    @node_hash_table = []
     @auto_change_verb()
     @update_snippet() # continuously update the snippet based on the currently focused_edge
     @blank_screen()

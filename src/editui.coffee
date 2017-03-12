@@ -29,6 +29,7 @@ class EditController
       clearForm.addEventListener("click", @clear_edit_form)
       saveForm.addEventListener("click", @save_edit_form)
       @controls = @formFields
+      @subject_input = @formFields[0]
       #@toggle_edit_form()
 
   create_edit_form: (toggleEdit) ->
@@ -38,6 +39,7 @@ class EditController
     formNode.innerHTML += '<button class="saveForm" type="button" disabled>Save</button>'
     formNode.innerHTML += '<button class="clearForm" type="button">Clear</button>'
     toggleEdit.appendChild(formNode)
+
 
   toggle_edit_form: () =>
     toggleEditMode = @con.getAttribute("edit")
@@ -92,5 +94,9 @@ class EditController
     for i of inputFields
       form.elements[i].value = ''
     saveButton.disabled = true
+
+  set_subject_node: (node) ->
+    @subject_input.setAttribute("value",node.id)
+
 
   (exports ? this).EditController = EditController
