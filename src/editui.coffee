@@ -5,6 +5,7 @@ indexdDBstore = require('indexeddbstoragecontroller')
 
 class EditController extends FiniteStateMachine
   constructor: (@huviz) ->
+    super()
     #TODO EditController should be loaded and checked when a dataset is loaded
     @userValid = true #TODO this needs to be hooked into authentication -- remove to huviz.coffee to validate against dataloaded and authentication
     #@userValid = false
