@@ -2732,8 +2732,8 @@ class Huviz
     #     quadMunger (OPTIONAL)
     #       returns an array of one or more quads inspired by each quad
     discoArgs ?= {}
-    quadTester = discoArgs.quadTester or (q) => q?
-    quadMunger = discoArgs.quadMunger or (q) => [q]
+    quadTester = discoArgs.quadTester or ((q) -> q?)
+    quadMunger = discoArgs.quadMunger or (q) -> [q]
     quad_count = 0
     parser = N3.Parser()
     parser.parse data, (err, quad, pref) =>
@@ -2755,8 +2755,9 @@ class Huviz
     #       returns an array of one or more quads inspired by each quad
     discoArgs ?= {}
     graphUri = discoArgs.graphUri
-    quadTester = discoArgs.quadTester or (q) => q?
-    quadMunger = discoArgs.quadMunger or (q) => [q]
+    default_quadTester = (q) => q?
+    quadTester = discoArgs.quadTester or default_quadTester
+    quadMunger = discoArgs.quadMunger or ((q) => [q])
     dataset = new GreenerTurtle().parse(data, "text/turtle")
     for subj_uri, frame of dataset.subjects
       for pred_id, pred of frame.predicates

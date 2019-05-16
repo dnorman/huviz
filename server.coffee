@@ -146,15 +146,5 @@ app.configure ->
 
 port = nopts.port or nopts.argv.remain[0] or process.env.PORT or default_port
 
-# http://regexpal.com/
-if false and not nopts.skip_orlando
-  # 
-  app.get "/snippet/orlando/:id([A-Za-z0-9-_]+)/",
-      createSnippetServer("orlando_all_entries_2013-03-04.xml", true)
-
-if not nopts.skip_poetesses
-  app.get "/snippet/poetesses/:id([A-Za-z0-9-_]+)/",
-      createSnippetServer("poetesses_decomposed.xml", false)
-
 console.log("Starting server on port: #{port} localhost")
 app.listen(port, 'localhost')

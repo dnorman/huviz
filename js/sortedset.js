@@ -1,3 +1,5 @@
+"use strict";
+
 /*
   SortedSet
 
@@ -537,6 +539,10 @@ var SortedSets_tests = function(verbose){
   expect("a_d.add(c)",0);
 };
 //Sortedsets_tests();
+/*
 if (typeof module !== 'undefined' && module.exports) {
   module.exports.SortedSet = SortedSet;
 }
+*/
+export { SortedSet }
+

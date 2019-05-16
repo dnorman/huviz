@@ -1,6 +1,12 @@
+"use strict"
 
-TreePicker = require('treepicker').TreePicker
+`// ((str) => alert(str))('boo') `
 
+`import { TreePicker } from 'treepicker'`
+
+# `import "treepicker" `
+
+# TreePicker = require('treepicker').TreePicker # what what?
 ###
 #     ColoredTreePicker is a widget for displaying and manipulating a hierarchy
 #     and displaying and manipulating the selectedness of branches and nodes.

@@ -1,5 +1,11 @@
+"use strict";
+
 window.addEventListener('load',function(){
-  huviz = require('huviz');
+  //huviz = require('huviz');
+
+  // import * as huviz from 'huviz'
+  import "huviz" ;
+  
   new huviz.Orlando({
     huviz_top_sel: "#HUVIZ_TOP",
     show_edit: false,
