@@ -848,7 +848,7 @@ class CommandController
     #    "____ every Thing."
     #    "shelve every Person."
     @nextcommandstr = @nextcommand.append('code')
-    $(@nextcommandstr.node()).addClass('nextcommand_str')
+    $(@nextcommandstr[0][0]).addClass('nextcommand_str')
 
     if @nextcommand_prompts_visible and @nextcommand_str_visible
       @nextcommand.append('hr')
@@ -864,14 +864,14 @@ class CommandController
     @nextcommand_suffix_phrase.attr('class','suffix_phrase')
 
     if @nextcommand_prompts_visible
-      $(@nextcommand_prompts.node()).show()
+      $(@nextcommand_prompts[0][0]).show()
     else
-      $(@nextcommand_prompts.node()).hide()
+      $(@nextcommand_prompts[0][0]).hide()
 
     if @nextcommand_str_visible
-      $(@nextcommandstr.node()).show()
+      $(@nextcommandstr[0][0]).show()
     else
-      $(@nextcommandstr.node()).hide()
+      $(@nextcommandstr[0][0]).hide()
 
     @nextcommand_working = @nextcommand.append('div').attr('class','cmd-spinner')
     @nextcommand_working.style('float:right; color:red; display:none;')
@@ -922,7 +922,7 @@ class CommandController
     @like_input.attr('class', 'like_input')
     @like_input.attr('placeholder','node Name')
     @liking_all_mode = false # rename to @liking_mode
-    @like_input.on('input', @handle_like_input)
+    @like_input.on 'input', @handle_like_input
     @clear_like_button = @likediv.append('button').text('⌫')
     @clear_like_button.attr('type','button').classed('clear_like', true)
     @clear_like_button.attr('disabled','disabled')
@@ -937,7 +937,6 @@ class CommandController
     like_value = @get_like_string()
     like_has_a_value = not not like_value
     if like_has_a_value
-      @huviz.set_search_regex(like_value) # cause labels on matching nodes to be displayed
       @clear_like_button.attr('disabled', null)
       if @liking_all_mode #
         TODO = "update the selection based on the like value"
@@ -948,7 +947,6 @@ class CommandController
         @set_immediate_execution_mode(@is_verb_phrase_empty())
         @huviz.click_set("all") # ie choose the 'All' set
     else # like does not have a value
-      @huviz.set_search_regex('') # clear the labelling of matching nodes
       @clear_like_button.attr('disabled','disabled')
       if @liking_all_mode # but it DID
         TODO = "restore the state before liking_all_mode " + \
@@ -982,9 +980,9 @@ class CommandController
   disable_doit_button: ->
     @doit_butt.attr('disabled','disabled')
   hide_doit_button: ->
-    $(@doit_butt.node()).hide()
+    $(@doit_butt[0][0]).hide()
   show_doit_button: ->
-    $(@doit_butt.node()).show()
+    $(@doit_butt[0][0]).show()
   set_immediate_execution_mode: (which) ->
     if which
       @hide_doit_button()
@@ -1004,7 +1002,7 @@ class CommandController
   clear_like: ->
     @huviz.like_string()
   get_like_string: ->
-    @like_input.node().value
+    @like_input[0][0].value
   push_command: (cmd) ->
     throw new Error('DEPRECATED')
     @push_command_onto_history(cmd)
@@ -1012,7 +1010,7 @@ class CommandController
     @future_cmdArgs.push(cmdArgs)
   push_future_onto_history: =>
     if @future_cmdArgs.length
-      @huviz.goto_tab('history')
+      @huviz.goto_tab(3)
       for cmdArgs in @future_cmdArgs
         @push_command_onto_history(@new_GraphCommand(cmdArgs))
       @reset_command_history()
@@ -1038,8 +1036,8 @@ class CommandController
     @disable_play_buttons()
     elem.text(cmd.str+"\n") # add CR for downloaded scripts
     delete_button = elem.append('a')
-    delete_button.attr('class', 'delete-command')
-    delete_button.on('click', () => @delete_script_command_by_id(cmd.id))
+    delete_button.attr('class','delete-command')
+    delete_button.on('click',() => @delete_script_command_by_id(cmd.id))
     @update_script_buttons()
   clear_unreplayed_commands_if_needed: ->
     while @command_idx0 < @command_list.length
@@ -1052,12 +1050,14 @@ class CommandController
         break
     return
   delete_script_command_by_idx: (idx) ->
-    elem_and_cmd = @command_list.splice(idx, 1)[0] # remove elem_and_cmd from command_list
-    elem = elem_and_cmd.elem.node()
-    if not elem
-      console.warn("delete_script_command_by_idx(#{idx}) failed to find elem in", elem_and_cmd)
+    elem_and_cmd = @command_list.splice(idx, 1)[0]
+    #alert("about to delete: " + elem_and_cmd.cmd.str)
+    elem = elem_and_cmd.elem[0]
+    if not elem or not elem[0]
       return
-    elem.remove()
+    orphan = elem[0]
+    pops = orphan.parentNode
+    pops.removeChild(orphan)
     if idx < @command_idx0
       @command_idx0--
     if @command_idx0 < 0
@@ -1120,7 +1120,7 @@ class CommandController
           args.classes = (class_name for class_name in @engaged_taxons)
         if @huviz.selected_set.length > 0
           args.sets = ['selected']
-    like_str = (@like_input.node().value or "").trim()
+    like_str = (@like_input[0][0].value or "").trim()
     if like_str
       args.like = like_str
     @command = @new_GraphCommand(args)
@@ -1162,20 +1162,20 @@ class CommandController
     if @nextcommand_prompts_visible or true # NEEDED BY huviz_test.js
       @nextcommand_verb_phrase.text(@command.verb_phrase)
       if @command.verb_phrase_ready
-        $(@nextcommand_verb_phrase.node()).
+        $(@nextcommand_verb_phrase[0][0]).
           addClass('nextcommand_prompt_ready').
           removeClass('nextcommand_prompt_unready')
       else
-        $(@nextcommand_verb_phrase.node()).
+        $(@nextcommand_verb_phrase[0][0]).
           removeClass('nextcommand_prompt_ready').
           addClass('nextcommand_prompt_unready')
       @nextcommand_noun_phrase.text(@command.noun_phrase)
       if @command.noun_phrase_ready
-        $(@nextcommand_noun_phrase.node()).
+        $(@nextcommand_noun_phrase[0][0]).
           addClass('nextcommand_prompt_ready').
           removeClass('nextcommand_prompt_unready')
       else
-        $(@nextcommand_noun_phrase.node()).
+        $(@nextcommand_noun_phrase[0][0]).
           removeClass('nextcommand_prompt_ready').
           addClass('nextcommand_prompt_unready')
       @nextcommand_suffix_phrase.text(@command.suffix_phrase)
@@ -1335,18 +1335,17 @@ class CommandController
     where = label? and @control_label(label, where) or @comdiv
     @the_sets = # TODO build this automatically from huviz.selectable_sets
       'all_set': [@huviz.all_set.label,
-              chosen_set: [@huviz.chosen_set.label]
-              discarded_set: [@huviz.discarded_set.label]
-              graphed_set: [@huviz.graphed_set.label]
-              hidden_set: [@huviz.hidden_set.label]
-              labelled_set: [@huviz.labelled_set.label]
-              matched_set: [@huviz.matched_set.label]
-              nameless_set: [@huviz.nameless_set.label]
-              pinned_set: [@huviz.pinned_set.label]
               selected_set: [@huviz.selected_set.label]
+              chosen_set: [@huviz.chosen_set.label]
+              graphed_set: [@huviz.graphed_set.label]
               shelved_set: [@huviz.shelved_set.label]
-              suppressed_set: [@huviz.suppressed_set.label]
+              hidden_set: [@huviz.hidden_set.label]
+              discarded_set: [@huviz.discarded_set.label]
+              labelled_set: [@huviz.labelled_set.label]
+              pinned_set: [@huviz.pinned_set.label]
+              nameless_set: [@huviz.nameless_set.label]
               walked_set: [@huviz.walked_set.label]
+              suppressed_set: [@huviz.suppressed_set.label]
               ]
     @set_picker_box = where.append('div')
         .classed('container',true)

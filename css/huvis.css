@@ -335,30 +335,3 @@ div.message_wrapper {
   top: 0;
   left: 0;
 }
-
-.boxNG {
-    border: .5px solid black;
-    border-radius: .4em;
-    display: none;
-    padding: .2em;
-    position: absolute;
-    text-align: center;
-    user-select: none;
-    background-color: rgb(255,255,255, .9);
-}
-
-.boxNGs .boxNG {
-    display: inline;
-}
-
-.boxNG.focusedNode {
-    background-color: #f2f2f2;
-    //text-decoration: line-through red;
-}
-
-.noBoxes .boxNG {
-    border: none;
-    margin-top: -0.8em;
-    margin-left: .3em;
-}
-

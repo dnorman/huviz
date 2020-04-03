@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Huvis Graph Visualization</title>
+      <%- include('huviz_css_stanza', nopts) %>
+
+      <!--
+    <XXlink href="/css/debugging.css" rel="stylesheet"/>
+      -->
+    <script>
+      window.module = {};
+    </script>
+    <% if (nopts.git_commit_hash) { %>
+    <script type="text/javascript">
+      window.HUVIZ_GIT_COMMIT_HASH = "<%= nopts.git_commit_hash %>";
+    </script>
+    <% } %>
+  </head>
+  <body id="body" style="background-color:grey">
+    <div id="FLOWER_TOP" class="FLOWER_TOP huviz_wrapper"
+         style="margin:5%;width:90%;height:90%;background-color:grey"></div>
+    <%- include('huviz_js_stanza', nopts) %>
+    <script src="/js/init_flower.js"></script>
+
+  </body>
+</html>

@@ -102,9 +102,11 @@
 
   app.use('/d3', express["static"](__dirname + '/node_modules/d3'));
 
-  quaff_module_path = process.env.QUAFF_PATH || path.join(__dirname, "node_modules", "quaff-lod");
+  quaff_module_path = process.env.QUAFF_PATH || "/node_modules";
 
-  app.use('/quaff-lod/quaff-lod-worker-bundle.js', express["static"](quaff_module_path + "/quaff-lod-worker-bundle.js"));
+  app.use('/quaff-lod/quaff-lod-worker-bundle.js', localOrCDN(quaff_module_path + "/quaff-lod/quaff-lod-worker-bundle.js", {
+    nopts: nopts
+  }));
 
   app.use('/data', express["static"](__dirname + '/data'));
 
@@ -130,7 +132,7 @@
     nopts: nopts
   }));
 
-  app.get("/search", localOrCDN("/views/search.html.ejs", {
+  app.get("/flower", localOrCDN("/views/flower.html.ejs", {
     nopts: nopts
   }));
 
@@ -142,15 +144,7 @@
     nopts: nopts
   }));
 
-  app.get("/getalong", localOrCDN("/views/getalong.html.ejs", {
-    nopts: nopts
-  }));
-
   app.get("/tests", localOrCDN("/views/tests.html.ejs", {
-    nopts: nopts
-  }));
-
-  app.get("/forcetoy", localOrCDN("/views/forcetoy.html", {
     nopts: nopts
   }));
 

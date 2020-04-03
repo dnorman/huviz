@@ -1,5 +1,5 @@
 
-# # huviz Server
+# # HuViz Server
 #
 # First we load standard node modules
 fs = require('fs')
@@ -27,7 +27,7 @@ switch process.env.NODE_ENV
   when 'development'
     cooked_argv.push("--faststart")
     cooked_argv.push("--git_commit_hash")
-    cooked_argv.push("8e3849b")
+    cooked_argv.push("8e3849b") # cafeb0b is funnier
     console.log(cooked_argv)
   when 'production'
     cooked_argv.push("--usecdn")
@@ -71,9 +71,9 @@ app.use('/d3', express.static(__dirname + '/node_modules/d3'))
 # Ideally we would do this....
 # `app.use('/quaff-lod', express.static(__dirname + '/node_modules/quaff-lod/'))`
 # but that fails while quaff-lod is being referenced as a symlink in package.json
-quaff_module_path = process.env.QUAFF_PATH or path.join(__dirname,"node_modules","quaff-lod")
+quaff_module_path = process.env.QUAFF_PATH or "/node_modules"
 app.use('/quaff-lod/quaff-lod-worker-bundle.js',
-    express.static(quaff_module_path + "/quaff-lod-worker-bundle.js"))
+    localOrCDN(quaff_module_path + "/quaff-lod/quaff-lod-worker-bundle.js", {nopts: nopts}))
 app.use('/data', express.static(__dirname + '/data'))
 app.use('/js', express.static(__dirname + '/js'))
 app.use("/jsoutline", express.static(__dirname + "/node_modules/jsoutline/lib"))
@@ -85,12 +85,10 @@ app.use('/chai', express.static(__dirname + '/node_modules/chai'))
 app.use('/marked', express.static(__dirname + '/node_modules/marked'))
 app.use('/huviz/docs', express.static(__dirname + '/docs'))
 app.get("/tab_tester", localOrCDN("/views/tab_tester.html", {nopts: nopts}))
-app.get("/search", localOrCDN("/views/search.html.ejs", {nopts: nopts}))
+app.get("/flower", localOrCDN("/views/flower.html.ejs", {nopts: nopts}))
 app.get("/boxed", localOrCDN("/views/boxed.html.ejs", {nopts: nopts}))
 app.get("/twoup", localOrCDN("/views/twoup.html.ejs", {nopts: nopts}))
-app.get("/getalong", localOrCDN("/views/getalong.html.ejs", {nopts: nopts}))
 app.get("/tests", localOrCDN("/views/tests.html.ejs", {nopts: nopts}))
-app.get("/forcetoy", localOrCDN("/views/forcetoy.html", {nopts: nopts}))
 app.get("/", localOrCDN("/views/huvis.html.ejs", {nopts: nopts}))
 app.use(express.static(__dirname + '/images')) # for /favicon.ico
 
